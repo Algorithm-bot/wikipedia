@@ -7,16 +7,7 @@ WikiFeed.js
 2. All the new changes have to be made in this file 
 
 Server.js
-1. This is the server file.
-2. i have kept the url at my localhost IP address so i have to make changes during deployment
-3. i think the server not working.
-4. create a dummy server to understand how to implement using postman.
-5. Use GET request to see if server working.
 
-
-topic_classifier.py
-1. It is an Text parsing model which will parse the article and categorize them according to tags i.e-#history, #science, etc.
-2. I downloaded it from Hugging face - https://huggingface.co/RenatoBarreira/BERT-VI
 
 POST Request
 1. body>raw>json

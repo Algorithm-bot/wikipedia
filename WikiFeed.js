@@ -8,12 +8,14 @@ import {
   ActivityIndicator,
   StyleSheet,
   TextInput,
+  Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
-import { AntDesign, Feather } from "@expo/vector-icons"; // Heart & Settings icon
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons"; // Heart & Settings icon
 import { LanguageContext } from "./LanguageContext";
 import { useTheme } from "./ThemeContext";
+import { PreferencesContext } from './SettingsScreen';
 
 const BACKEND_URL = "http://192.168.0.100:5000"; // Update with your backend IP
 
@@ -26,29 +28,76 @@ const WikiFeed = () => {
   const navigation = useNavigation();
   const { language } = useContext(LanguageContext);
   const { darkMode } = useTheme();
+  const { selectedCategory } = useContext(PreferencesContext);
 
   // Fetch a random Wikipedia article
   const getWikiApiUrl = () => {
-    return `https://${language}.wikipedia.org/api/rest_v1/page/random/summary`;
+    if (selectedCategory === 'all') {
+      return `https://${language}.wikipedia.org/api/rest_v1/page/random/summary`;
+    }
+    
+    // Use a more reliable category search endpoint
+    return `https://${language}.wikipedia.org/w/api.php?` +
+      new URLSearchParams({
+        action: 'query',
+        format: 'json',
+        list: 'categorymembers',
+        cmtitle: `Category:${selectedCategory}`,
+        cmlimit: '20',
+        cmtype: 'page',
+        origin: '*'
+      });
   };
 
   const fetchArticle = async () => {
     setLoading(true);
     try {
-      const response = await fetch(getWikiApiUrl());
-      const data = await response.json();
+      if (selectedCategory === 'all') {
+        // Existing random article fetch logic
+        const response = await fetch(getWikiApiUrl());
+        const data = await response.json();
+        const newArticle = {
+          pageid: data.pageid,
+          title: data.title,
+          extract: data.extract,
+          thumbnail: data.thumbnail?.source,
+          url: `https://${language}.wikipedia.org/wiki/${data.title.replace(/ /g, "_")}`,
+        };
+        setArticles((prev) => [...prev, newArticle]);
+      } else {
+        // Category-specific fetch logic
+        const response = await fetch(getWikiApiUrl());
+        const data = await response.json();
+        
+        if (data.query && data.query.categorymembers) {
+          // Get a random subset of articles from the category
+          const randomArticles = data.query.categorymembers
+            .sort(() => Math.random() - 0.5)
+            .slice(0, 5);
 
-      const newArticle = {
-        pageid: data.pageid,
-        title: data.title,
-        extract: data.extract,
-        thumbnail: data.thumbnail?.source,
-        url: `https://${language}.wikipedia.org/wiki/${data.title.replace(/ /g, "_")}`,
-      };
+          // Fetch full details for each article
+          const articleDetails = await Promise.all(
+            randomArticles.map(async (article) => {
+              const detailsResponse = await fetch(
+                `https://${language}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(article.title)}`
+              );
+              const details = await detailsResponse.json();
+              return {
+                pageid: details.pageid,
+                title: details.title,
+                extract: details.extract,
+                thumbnail: details.thumbnail?.source,
+                url: `https://${language}.wikipedia.org/wiki/${details.title.replace(/ /g, "_")}`,
+              };
+            })
+          );
 
-      setArticles((prev) => [...prev, newArticle]);
+          setArticles(prev => [...prev, ...articleDetails]);
+        }
+      }
     } catch (error) {
       console.error("Error fetching Wikipedia article:", error);
+      Alert.alert("Error", "Failed to fetch articles. Please try again.");
     }
     setLoading(false);
   };
@@ -66,10 +115,15 @@ const WikiFeed = () => {
   // Add an article to favorites
   const addToFavorites = async (article) => {
     try {
-      await axios.post(`${BACKEND_URL}/favorites`, article);
-      setFavorites((prev) => [...prev, article.pageid]);
+      console.log("Adding article to favorites:", article); // Debug log
+      const response = await axios.post(`${BACKEND_URL}/favorites`, article);
+      if (response.data.article) {
+        setFavorites((prev) => [...prev, article.pageid]);
+        
+      }
     } catch (error) {
       console.error("Error adding to favorites:", error.response?.data?.message || error);
+      Alert.alert("Error", "Failed to add article to bookmarks. Please try again.");
     }
   };
 
@@ -94,39 +148,50 @@ const WikiFeed = () => {
     setLoading(true);
     setIsSearching(true);
     try {
+      // Using the opensearch API endpoint which is more reliable
       const response = await fetch(
-        `https://${language}.wikipedia.org/api/rest_v1/page/search-title/${encodeURIComponent(query)}`
+        `https://${language}.wikipedia.org/w/api.php?` +
+        new URLSearchParams({
+          action: 'opensearch',
+          search: query,
+          limit: '5',
+          namespace: '0',
+          format: 'json',
+          origin: '*'
+        })
       );
-      const data = await response.json();
       
-      if (data.pages) {
-        const searchResults = await Promise.all(
-          data.pages.slice(0, 5).map(async (page) => {
-            const detailsResponse = await fetch(
-              `https://${language}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(page.title)}`
-            );
-            const details = await detailsResponse.json();
-            return {
-              pageid: details.pageid,
-              title: details.title,
-              extract: details.extract,
-              thumbnail: details.thumbnail?.source,
-              url: `https://${language}.wikipedia.org/wiki/${details.title.replace(/ /g, "_")}`,
-            };
-          })
-        );
-        setArticles(searchResults);
-      }
+      const [searchTerm, titles, descriptions, urls] = await response.json();
+      
+      // Get detailed information for each search result
+      const searchResults = await Promise.all(
+        titles.map(async (title, index) => {
+          const detailsResponse = await fetch(
+            `https://${language}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`
+          );
+          const details = await detailsResponse.json();
+          return {
+            pageid: details.pageid,
+            title: details.title,
+            extract: details.extract || descriptions[index],
+            thumbnail: details.thumbnail?.source,
+            url: urls[index],
+          };
+        })
+      );
+
+      setArticles(searchResults);
     } catch (error) {
       console.error("Error searching articles:", error);
+      Alert.alert("Error", "Failed to search articles. Please try again.");
     }
     setLoading(false);
   };
 
   useEffect(() => {
-    setArticles([]); // Clear existing articles
-    fetchArticle(); // Fetch new article in selected language
-  }, [language]);
+    setArticles([]);
+    fetchArticle();
+  }, [selectedCategory, language]);
 
   useEffect(() => {
     fetchFavorites(); // Load favorite articles
@@ -151,6 +216,9 @@ const WikiFeed = () => {
             placeholderTextColor={darkMode ? "#666" : "#999"}
             value={searchQuery}
             onChangeText={setSearchQuery}
+            onSubmitEditing={() => searchArticles(searchQuery)}
+            returnKeyType="search"
+            autoCapitalize="none"
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity 
@@ -165,7 +233,7 @@ const WikiFeed = () => {
           style={styles.iconButton}
           onPress={() => navigation.navigate("BookmarksScreen")}
         >
-          <AntDesign name="heart" size={24} color={darkMode ? "white" : "black"} />
+          <Feather name="bookmark" size={24} color={darkMode ? "white" : "black"} />
         </TouchableOpacity>
         <TouchableOpacity 
           style={styles.iconButton}
@@ -178,7 +246,7 @@ const WikiFeed = () => {
       {/* Articles List */}
       <FlatList
         data={articles}
-        keyExtractor={(item) => item.pageid.toString()}
+        keyExtractor={(item) => `${item.pageid}-${Date.now()}`}
         renderItem={({ item }) => (
           <View style={[styles.articleContainer, darkMode && styles.articleContainerDark]}>
             <View style={{ width: "100%", borderRadius: 10, overflow: "hidden" }}>
@@ -201,18 +269,20 @@ const WikiFeed = () => {
               </TouchableOpacity>
 
               {/* Heart Button (Right Side) */}
-              <TouchableOpacity
-                onPress={() =>
-                  favorites.includes(item.pageid) ? removeFromFavorites(item.pageid) : addToFavorites(item)
-                }
-                style={styles.heartButton}
-              >
-                <AntDesign
-                  name={favorites.includes(item.pageid) ? "heart" : "hearto"}
-                  size={32}
-                  color={favorites.includes(item.pageid) ? "red" : "black"}
-                />
-              </TouchableOpacity>
+              <View style={styles.bookmarkButtonContainer}>
+                <TouchableOpacity
+                  onPress={() =>
+                    favorites.includes(item.pageid) ? removeFromFavorites(item.pageid) : addToFavorites(item)
+                  }
+                  style={styles.bookmarkButton}
+                >
+                  <MaterialCommunityIcons
+                    name={favorites.includes(item.pageid) ? "bookmark" : "bookmark-outline"}
+                    size={40}
+                    color={favorites.includes(item.pageid) ? "#FF6B6B" : "rgba(37, 134, 239, 0.41)"}
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         )}
@@ -241,7 +311,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     padding: 16,
-    paddingTop: 20,
+    paddingTop: 80,
     backgroundColor: "#ffffff",
     elevation: 4,
     shadowColor: "#000",
@@ -327,9 +397,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     letterSpacing: 0.5,
   },
-  heartButton: {
+  bookmarkButtonContainer: {
+    position: 'relative',
+  },
+  bookmarkButton: {
     padding: 8,
-    backgroundColor: 'rgba(0,0,0,0.05)',
     borderRadius: 20,
   },
   textDark: {
@@ -340,7 +412,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginRight: 16,
-    backgroundColor: 'rgba(0,0,0,0.05)',
+    backgroundColor: 'rgba(228, 216, 216, 0.11)',
     borderRadius: 25,
     paddingHorizontal: 16,
     height: 44,

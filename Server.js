@@ -29,6 +29,12 @@ const ArticleSchema = new mongoose.Schema({
 // Create the model with the collection name "MyData"
 const Article = mongoose.model("Article", ArticleSchema, "MyData");
 
+// Add error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Server Error:', err);
+  res.status(500).json({ error: 'Internal Server Error', message: err.message });
+});
+
 // Save an article to favorites
 app.post("/favorites", async (req, res) => {
   try {
@@ -40,7 +46,10 @@ app.post("/favorites", async (req, res) => {
     // Validate input
     if (!pageid || !title || !extract || !url) {
       console.log("❌ Missing required fields!");
-      return res.status(400).json({ message: "Missing required fields" });
+      return res.status(400).json({ 
+        message: "Missing required fields",
+        received: { pageid, title, extract, url }
+      });
     }
 
     const existingArticle = await Article.findOne({ pageid });

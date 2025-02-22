@@ -7,9 +7,11 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  RefreshControl,
+  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import axios from 'axios';
 import { useTheme } from './ThemeContext';
 
@@ -18,17 +20,25 @@ const BACKEND_URL = "http://192.168.0.100:5000";
 const BookmarksScreen = () => {
   const [bookmarks, setBookmarks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
   const { darkMode } = useTheme();
 
   const fetchBookmarks = async () => {
     try {
+      console.log("Fetching bookmarks from:", `${BACKEND_URL}/favorites`);
       const response = await axios.get(`${BACKEND_URL}/favorites`);
+      console.log("Received bookmarks:", response.data);
       setBookmarks(response.data);
     } catch (error) {
       console.error('Error fetching bookmarks:', error);
+      Alert.alert(
+        "Error",
+        "Failed to load bookmarks. Please check your connection and try again."
+      );
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -38,14 +48,25 @@ const BookmarksScreen = () => {
       setBookmarks(prev => prev.filter(bookmark => bookmark.pageid !== pageid));
     } catch (error) {
       console.error('Error removing bookmark:', error);
+      Alert.alert("Error", "Failed to remove bookmark. Please try again.");
     }
   };
 
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    fetchBookmarks();
+  }, []);
+
+  // Initial load
+  useEffect(() => {
+    fetchBookmarks();
+  }, []);
+
+  // Refresh on focus
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       fetchBookmarks();
     });
-
     return unsubscribe;
   }, [navigation]);
 
@@ -64,17 +85,29 @@ const BookmarksScreen = () => {
       <FlatList
         data={bookmarks}
         keyExtractor={(item) => item.pageid.toString()}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#2196F3"]}
+            tintColor={darkMode ? "#fff" : "#2196F3"}
+          />
+        }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={[styles.emptyText, darkMode && styles.textDark]}>
-              No bookmarks yet
+              No bookmarks yet. Save some articles from the feed!
             </Text>
           </View>
         }
         renderItem={({ item }) => (
           <View style={[styles.articleContainer, darkMode && styles.articleContainerDark]}>
             {item.thumbnail && (
-              <Image source={{ uri: item.thumbnail }} style={styles.image} />
+              <Image 
+                source={{ uri: item.thumbnail }} 
+                style={styles.image}
+                defaultSource={require('./assets/icon.png')} // Add a placeholder image
+              />
             )}
             
             <View style={styles.contentContainer}>
@@ -97,7 +130,11 @@ const BookmarksScreen = () => {
                   style={styles.removeButton}
                   onPress={() => removeBookmark(item.pageid)}
                 >
-                  <AntDesign name="heart" size={24} color="red" />
+                  <MaterialCommunityIcons 
+                    name="bookmark" 
+                    size={27} 
+                    color="#FF6B6B" 
+                  />
                 </TouchableOpacity>
               </View>
             </View>
@@ -178,6 +215,7 @@ const styles = StyleSheet.create({
   },
   removeButton: {
     padding: 8,
+    borderRadius: 20,
   },
   emptyContainer: {
     flex: 1,

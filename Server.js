@@ -1,96 +1,103 @@
-const express = require('express');
-const axios = require('axios');
-const dotenv = require('dotenv');
-require('dotenv').config();
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+
 const app = express();
-const port = 3290;
-
-// Hugging Face API settings
-const HUGGINGFACE_API_KEY = process.env.HUGGINGFACE_API_KEY;
-const MODEL = 'cardiffnlp/tweet-topic-21-multi';
-
-// Middleware to parse JSON bodies
 app.use(express.json());
+app.use(cors());
 
-console.log('Hugging Face API Token:', HUGGINGFACE_API_KEY);
+// Connect to MongoDB
+mongoose.connect("mongodb+srv://sahil:$AHIL_sawant07@wikipedia.dajnn.mongodb.net/library?retryWrites=true&w=majority&appName=wikipedia")
+  .then(() => console.log("Connected to MongoDB ✅"))
+  .catch((err) => console.error("MongoDB Connection Error:", err));
 
-// Fetch Wikipedia article content
-const fetchWikipediaArticle = async (title) => {
-    try {
-        const response = await axios.get('https://en.wikipedia.org/w/api.php', {
-            params: {
-                action: 'query',
-                prop: 'extracts',
-                exintro: true,
-                exchars: 1000,
-                titles: title,
-                format: 'json'
-            }
-        });
-        
-        const pages = response.data.query.pages;
-        const pageId = Object.keys(pages)[0];
+const db = mongoose.connection;
 
-        // Check if the article exists
-        if (pageId === '-1') {
-            return null; // Article not found
-        }
+// Check if MongoDB connection is successful
+db.on("error", (error) => console.error("MongoDB Connection Error:", error));
+db.once("open", () => console.log("Connected to MongoDB ✅"));
 
-        return pages[pageId].extract; // Return the article content
-    } catch (error) {
-        console.error("Error fetching Wikipedia article:", error);
-        return null;
-    }
-};
+// Define the schema
+const ArticleSchema = new mongoose.Schema({
+  pageid: { type: Number, unique: true, required: true },
+  title: { type: String, required: true },
+  extract: { type: String, required: true },
+  thumbnail: String,
+  url: { type: String, required: true },
+});
 
-// Classify the text using Hugging Face model
-const classifyText = async (text) => {
-    try {
-        const response = await axios.post(
-            `https://api-inference.huggingface.co/models/${MODEL}`,
-            { inputs: text },
-            {
-                headers: { Authorization: `Bearer ${HUGGINGFACE_API_KEY}` }
-            }
-        );
+// Create the model with the collection name "MyData"
+const Article = mongoose.model("Article", ArticleSchema, "MyData");
 
-        // Hugging Face response handling: Check for label in prediction
-        if (response.data && response.data[0] && response.data[0].label) {
-            return response.data[0].label;
-        }
-        return null; // In case no label is found
-    } catch (error) {
-        console.error("Error classifying text:", error);
-        return null;
-    }
-};
+// Save an article to favorites
+app.post("/favorites", async (req, res) => {
+  try {
+    console.log("Received POST request to /favorites");
+    console.log("Request body:", req.body);
 
-// API endpoint to classify a Wikipedia article
-app.get('/classify-article', async (req, res) => {
-    const title = req.query.title;
+    const { pageid, title, extract, thumbnail, url } = req.body;
 
-    // Validate the title parameter
-    if (!title) {
-        return res.status(400).json({ error: "Title parameter is required" });
+    // Validate input
+    if (!pageid || !title || !extract || !url) {
+      console.log("❌ Missing required fields!");
+      return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // Fetch article content from Wikipedia
-    const articleContent = await fetchWikipediaArticle(title);
-    if (!articleContent) {
-        return res.status(404).json({ error: "Article not found" });
+    const existingArticle = await Article.findOne({ pageid });
+    console.log("Existing article check result:", existingArticle);
+
+    if (existingArticle) {
+      console.log("⚠ Article already exists in favorites.");
+      return res.status(400).json({ message: "Already added to favorites" });
     }
 
-    // Classify the article content
-    const predictedTag = await classifyText(articleContent);
-    if (!predictedTag) {
-        return res.status(500).json({ error: "Error classifying the article" });
+    const article = new Article({ pageid, title, extract, thumbnail, url });
+    const savedArticle = await article.save();
+
+    console.log("✅ Article saved successfully:", savedArticle);
+    res.status(201).json({ message: "Added to favorites", article: savedArticle });
+  } catch (error) {
+    console.error("❌ Error saving favorite:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get all favorite articles
+app.get("/favorites", async (req, res) => {
+  try {
+    console.log("Received GET request to /favorites");
+    const favorites = await Article.find();
+    console.log("Fetched favorites:", favorites);
+    res.json(favorites);
+  } catch (error) {
+    console.error("Error fetching favorites:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Remove an article from favorites
+app.delete("/favorites/:pageid", async (req, res) => {
+  try {
+    console.log("Received DELETE request to /favorites/:pageid");
+    console.log("Request params:", req.params);
+
+    const { pageid } = req.params;
+
+    const deletedArticle = await Article.findOneAndDelete({ pageid });
+    console.log("Deleted article result:", deletedArticle);
+
+    if (!deletedArticle) {
+      console.log("⚠ Article not found in favorites.");
+      return res.status(404).json({ message: "Article not found in favorites" });
     }
 
-    // Return the classification result
-    res.json({ title, tag: predictedTag });
+    console.log("✅ Article removed successfully:", deletedArticle);
+    res.json({ message: "Removed from favorites", deletedArticle });
+  } catch (error) {
+    console.error("❌ Error removing favorite:", error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Start the server
-app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
-});
+app.listen(5000, () => console.log("Server running on port 5000 🚀"));

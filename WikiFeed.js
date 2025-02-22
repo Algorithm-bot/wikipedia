@@ -1,169 +1,378 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, Image, TouchableOpacity, FlatList, ActivityIndicator, TextInput, StyleSheet } from "react-native";
+import React, { useEffect, useState, useContext } from "react";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  FlatList,
+  ActivityIndicator,
+  StyleSheet,
+  TextInput,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
+import { AntDesign, Feather } from "@expo/vector-icons"; // Heart & Settings icon
+import { LanguageContext } from "./LanguageContext";
+import { useTheme } from "./ThemeContext";
 
-const WIKI_API_URL = "https://en.wikipedia.org/api/rest_v1/page/random/summary";
-
-// Predefined tags for filtering
-const tags = ["#science", "#history", "#technology", "#art", "#sports"]; 
-
-// Function to classify the tags for an article's content
-const getClassifiedTags = async (articleContent) => {
-  try {
-    const response = await axios.post('http://192.168.0.100/classify', {
-      content: articleContent,
-    });
-    return response.data.tags;  // Assuming response returns classified tags
-  } catch (error) {
-    console.error('Error fetching classified tags:', error);
-    return [];
-  }
-};
+const BACKEND_URL = "http://192.168.0.100:5000"; // Update with your backend IP
 
 const WikiFeed = () => {
   const [articles, setArticles] = useState([]);
-  const [filteredArticles, setFilteredArticles] = useState([]);
+  const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [selectedTag, setSelectedTag] = useState(""); // Store selected tag
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
   const navigation = useNavigation();
+  const { language } = useContext(LanguageContext);
+  const { darkMode } = useTheme();
 
-  // Fetch article summary and classify tags
+  // Fetch a random Wikipedia article
+  const getWikiApiUrl = () => {
+    return `https://${language}.wikipedia.org/api/rest_v1/page/random/summary`;
+  };
+
   const fetchArticle = async () => {
     setLoading(true);
     try {
-      const response = await fetch(WIKI_API_URL);
+      const response = await fetch(getWikiApiUrl());
       const data = await response.json();
 
-      // Classify tags for the article using the server
-      const tagsForArticle = await getClassifiedTags(data.extract);
-
-      // Add the classified tags to the article
-      const articleWithTags = {
-        ...data,
-        tags: tagsForArticle, // Add classified tags here
+      const newArticle = {
+        pageid: data.pageid,
+        title: data.title,
+        extract: data.extract,
+        thumbnail: data.thumbnail?.source,
+        url: `https://${language}.wikipedia.org/wiki/${data.title.replace(/ /g, "_")}`,
       };
 
-      setArticles((prev) => [...prev, articleWithTags]);
-      setFilteredArticles((prev) => [...prev, articleWithTags]); // Initially, show all articles
+      setArticles((prev) => [...prev, newArticle]);
     } catch (error) {
       console.error("Error fetching Wikipedia article:", error);
     }
     setLoading(false);
   };
 
-  // Filter articles based on the selected tag
-  const filterArticlesByTag = async (tag) => {
-    setSelectedTag(tag);
-
-    if (tag === "") {
-      setFilteredArticles(articles); // Show all articles if no tag is selected
-    } else {
-      const filtered = [];
-
-      // Filter articles based on classified tags
-      for (let article of articles) {
-        const articleTags = await getClassifiedTags(article.extract);
-        if (articleTags.includes(tag)) {
-          filtered.push(article);
-        }
-      }
-
-      setFilteredArticles(filtered);
+  // Fetch favorite articles
+  const fetchFavorites = async () => {
+    try {
+      const response = await axios.get(`${BACKEND_URL}/favorites`);
+      setFavorites(response.data.map((fav) => fav.pageid));
+    } catch (error) {
+      console.error("Error fetching favorites:", error);
     }
   };
 
+  // Add an article to favorites
+  const addToFavorites = async (article) => {
+    try {
+      await axios.post(`${BACKEND_URL}/favorites`, article);
+      setFavorites((prev) => [...prev, article.pageid]);
+    } catch (error) {
+      console.error("Error adding to favorites:", error.response?.data?.message || error);
+    }
+  };
+
+  // Remove an article from favorites
+  const removeFromFavorites = async (pageid) => {
+    try {
+      await axios.delete(`${BACKEND_URL}/favorites/${pageid}`);
+      setFavorites((prev) => prev.filter((id) => id !== pageid));
+    } catch (error) {
+      console.error("Error removing from favorites:", error);
+    }
+  };
+
+  const searchArticles = async (query) => {
+    if (!query.trim()) {
+      setIsSearching(false);
+      setArticles([]);
+      fetchArticle();
+      return;
+    }
+
+    setLoading(true);
+    setIsSearching(true);
+    try {
+      const response = await fetch(
+        `https://${language}.wikipedia.org/api/rest_v1/page/search-title/${encodeURIComponent(query)}`
+      );
+      const data = await response.json();
+      
+      if (data.pages) {
+        const searchResults = await Promise.all(
+          data.pages.slice(0, 5).map(async (page) => {
+            const detailsResponse = await fetch(
+              `https://${language}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(page.title)}`
+            );
+            const details = await detailsResponse.json();
+            return {
+              pageid: details.pageid,
+              title: details.title,
+              extract: details.extract,
+              thumbnail: details.thumbnail?.source,
+              url: `https://${language}.wikipedia.org/wiki/${details.title.replace(/ /g, "_")}`,
+            };
+          })
+        );
+        setArticles(searchResults);
+      }
+    } catch (error) {
+      console.error("Error searching articles:", error);
+    }
+    setLoading(false);
+  };
+
   useEffect(() => {
-    fetchArticle(); // Fetch the first article on mount
+    setArticles([]); // Clear existing articles
+    fetchArticle(); // Fetch new article in selected language
+  }, [language]);
+
+  useEffect(() => {
+    fetchFavorites(); // Load favorite articles
   }, []);
 
-  return (
-    <View style={{ flex: 1 }}>
-      {/* Tag Filter Section */}
-      <View style={styles.tagContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search by tag (e.g., science)"
-          value={selectedTag.replace("#", "")} // Display without '#'
-          onChangeText={(text) => filterArticlesByTag(`#${text}`)} // Apply tag filter
-        />
-      </View>
+  useEffect(() => {
+    const debounceTimeout = setTimeout(() => {
+      searchArticles(searchQuery);
+    }, 500);
 
-      {/* Tag List Section */}
-      <View style={styles.tags}>
-        {tags.map((tag) => (
-          <TouchableOpacity
-            key={tag}
-            style={[styles.tagButton, selectedTag === tag && styles.selectedTag]}
-            onPress={() => filterArticlesByTag(tag)} // Filter by tag
-          >
-            <Text style={styles.tagText}>{tag}</Text>
-          </TouchableOpacity>
-        ))}
+    return () => clearTimeout(debounceTimeout);
+  }, [searchQuery]);
+
+  return (
+    <View style={[{ flex: 1 }, darkMode && { backgroundColor: '#121212' }]}>
+      {/* Header with Search and Settings */}
+      <View style={[styles.header, darkMode && styles.headerDark]}>
+        <View style={styles.searchContainer}>
+          <TextInput
+            style={[styles.searchInput, darkMode && styles.searchInputDark]}
+            placeholder="Search articles..."
+            placeholderTextColor={darkMode ? "#666" : "#999"}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity 
+              style={styles.clearButton}
+              onPress={() => setSearchQuery("")}
+            >
+              <Feather name="x" size={20} color={darkMode ? "#666" : "#999"} />
+            </TouchableOpacity>
+          )}
+        </View>
+        <TouchableOpacity 
+          style={styles.iconButton}
+          onPress={() => navigation.navigate("BookmarksScreen")}
+        >
+          <AntDesign name="heart" size={24} color={darkMode ? "white" : "black"} />
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.iconButton}
+          onPress={() => navigation.navigate("SettingsScreen")}
+        >
+          <Feather name="settings" size={24} color={darkMode ? "white" : "black"} />
+        </TouchableOpacity>
       </View>
 
       {/* Articles List */}
       <FlatList
-        data={filteredArticles}
+        data={articles}
         keyExtractor={(item) => item.pageid.toString()}
         renderItem={({ item }) => (
-          <View style={{ padding: 16, alignItems: "center" }}>
-            {item.thumbnail?.source && (
-              <Image
-                source={{ uri: item.thumbnail.source }}
-                style={{ width: 300, height: 200, borderRadius: 10 }}
-                resizeMode="cover"
-              />
-            )}
-            <Text style={{ fontSize: 20, fontWeight: "bold", marginTop: 10 }}>{item.title}</Text>
-            <Text style={{ fontSize: 16, textAlign: "center", marginVertical: 10 }}>
+          <View style={[styles.articleContainer, darkMode && styles.articleContainerDark]}>
+            <View style={{ width: "100%", borderRadius: 10, overflow: "hidden" }}>
+              <Image source={{ uri: item.thumbnail }} style={styles.image} />
+            </View>
+
+            <Text style={[styles.title, darkMode && styles.textDark]}>{item.title}</Text>
+            <Text style={[styles.extract, darkMode && styles.textDark]}>
               {item.extract.length > 200 ? item.extract.substring(0, 200) + "..." : item.extract}
             </Text>
-            <TouchableOpacity
-              onPress={() => navigation.navigate("WikiWebView", { url: `https://en.wikipedia.org/wiki/${item.title.replace(/ /g, "_")}` })}
-              style={{ backgroundColor: "#007AFF", padding: 10, borderRadius: 8 }}
-            >
-              <Text style={{ color: "white", fontWeight: "bold" }}>Read More</Text>
-            </TouchableOpacity>
+
+            {/* Buttons Container */}
+            <View style={styles.buttonsContainer}>
+              {/* Read More Button (Left Side) */}
+              <TouchableOpacity
+                onPress={() => navigation.navigate("WikiWebView", { url: item.url })}
+                style={styles.readMoreButton}
+              >
+                <Text style={styles.readMoreText}>Read More</Text>
+              </TouchableOpacity>
+
+              {/* Heart Button (Right Side) */}
+              <TouchableOpacity
+                onPress={() =>
+                  favorites.includes(item.pageid) ? removeFromFavorites(item.pageid) : addToFavorites(item)
+                }
+                style={styles.heartButton}
+              >
+                <AntDesign
+                  name={favorites.includes(item.pageid) ? "heart" : "hearto"}
+                  size={32}
+                  color={favorites.includes(item.pageid) ? "red" : "black"}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
         )}
-        onEndReached={fetchArticle} // Load more articles on scroll
+        onEndReached={!isSearching ? fetchArticle : null}
         onEndReachedThreshold={0.5}
-        ListFooterComponent={loading && <ActivityIndicator size="large" color="#007AFF" />}
+        ListFooterComponent={loading && <ActivityIndicator size="large" color="#2196F3" />}
+        ListEmptyComponent={
+          !loading && (
+            <View style={styles.emptyContainer}>
+              <Text style={[styles.emptyText, darkMode && styles.textDark]}>
+                {searchQuery.trim() 
+                  ? "No articles found for your search"
+                  : "Loading articles..."}
+              </Text>
+            </View>
+          )
+        }
       />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  tagContainer: {
-    padding: 10,
-    backgroundColor: "#f1f1f1",
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
+    paddingTop: 20,
+    backgroundColor: "#ffffff",
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  headerDark: {
+    backgroundColor: '#1a1a1a',
+  },
+  headerText: {
+    fontSize: 26,
+    fontWeight: "800",
+    color: "#333",
+    letterSpacing: 0.5,
+  },
+  articleContainer: {
+    padding: 20,
+    backgroundColor: "#fff",
+    marginHorizontal: 16,
+    marginVertical: 8,
+    borderRadius: 16,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    alignItems: "center",
+  },
+  articleContainerDark: {
+    backgroundColor: '#242424',
+    shadowColor: "#fff",
+    shadowOpacity: 0.1,
+  },
+  image: {
+    width: "100%",
+    height: 250,
+    borderRadius: 12,
+    resizeMode: "cover",
+    marginBottom: 4,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: "700",
+    marginTop: 12,
+    marginBottom: 8,
+    textAlign: "center",
+    color: "#1a1a1a",
+    paddingHorizontal: 10,
+  },
+  extract: {
+    fontSize: 16,
+    textAlign: "left",
+    marginVertical: 12,
+    color: "#555",
+    lineHeight: 24,
+    paddingHorizontal: 8,
+  },
+  buttonsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "100%",
+    marginTop: 16,
+    paddingHorizontal: 20,
+  },
+  readMoreButton: {
+    backgroundColor: "#2196F3",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 25,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  readMoreText: {
+    color: "white",
+    fontWeight: "600",
+    fontSize: 16,
+    letterSpacing: 0.5,
+  },
+  heartButton: {
+    padding: 8,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    borderRadius: 20,
+  },
+  textDark: {
+    color: '#ffffff',
+  },
+  searchContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 16,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    borderRadius: 25,
+    paddingHorizontal: 16,
+    height: 44,
   },
   searchInput: {
-    height: 40,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingLeft: 10,
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+    paddingVertical: 8,
   },
-  tags: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    padding: 10,
+  searchInputDark: {
+    color: '#fff',
+    backgroundColor: 'transparent',
   },
-  tagButton: {
-    backgroundColor: "#007AFF",
-    padding: 10,
-    margin: 5,
-    borderRadius: 8,
+  clearButton: {
+    padding: 4,
   },
-  selectedTag: {
-    backgroundColor: "#005BB5",
+  iconButton: {
+    padding: 8,
+    marginLeft: 8,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    borderRadius: 20,
   },
-  tagText: {
-    color: "white",
-    fontWeight: "bold",
+  emptyContainer: {
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
   },
 });
 

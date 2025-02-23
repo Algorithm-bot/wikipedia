@@ -12,7 +12,9 @@
   "dependencies": {
     "@expo/vector-icons": "^14.0.4",
     "@huggingface/transformers": "^3.3.3",
+    "@react-native-async-storage/async-storage": "^1.24.0",
     "@react-native-picker/picker": "^2.11.0",
+    "@react-native/metro-config": "^0.78.0",
     "@react-navigation/native": "^7.0.14",
     "@react-navigation/stack": "^7.1.1",
     "axios": "^1.7.9",
@@ -20,7 +22,7 @@
     "child_process": "^1.0.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
-    "expo": "~52.0.35",
+    "expo": "^52.0.37",
     "expo-application": "^6.0.2",
     "expo-auth-session": "^6.0.3",
     "expo-status-bar": "~2.0.1",

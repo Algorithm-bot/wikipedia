@@ -1,0 +1,136 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.package.wikipedia"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="23"
+9        android:targetSdkVersion="33" />
+10
+11    <uses-permission android:name="android.permission.INTERNET" />
+11-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:3:3-64
+11-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:3:20-62
+12    <!-- OPTIONAL PERMISSIONS, REMOVE WHATEVER YOU DO NOT NEED -->
+13    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+13-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:5:3-75
+13-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:5:20-73
+14    <uses-permission android:name="android.permission.VIBRATE" />
+14-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:6:3-63
+14-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:6:20-61
+15    <!-- These require runtime permissions on M -->
+16    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+16-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:8:3-77
+16-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:8:20-75
+17    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+17-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:9:3-78
+17-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:9:20-76
+18    <!-- END OPTIONAL PERMISSIONS -->
+19
+20    <queries>
+20-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:12:3-19:13
+21
+22        <!-- Support checking for http(s) links via the Linking API -->
+23        <intent>
+23-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:14:5-18:14
+24            <action android:name="android.intent.action.VIEW" />
+24-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:15:7-59
+24-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:15:15-56
+25
+26            <category android:name="android.intent.category.BROWSABLE" />
+26-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:16:7-68
+26-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:16:17-65
+27
+28            <data android:scheme="https" />
+28-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:17:7-38
+28-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:17:13-35
+29        </intent>
+30    </queries>
+31
+32    <permission
+32-->[androidx.core:core:1.9.0] C:\Users\sahil\.gradle\caches\8.10.2\transforms\03010d5026d40a2e76861f0916b921c0\transformed\core-1.9.0\AndroidManifest.xml:22:5-24:47
+33        android:name="com.package.wikipedia.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+33-->[androidx.core:core:1.9.0] C:\Users\sahil\.gradle\caches\8.10.2\transforms\03010d5026d40a2e76861f0916b921c0\transformed\core-1.9.0\AndroidManifest.xml:23:9-81
+34        android:protectionLevel="signature" />
+34-->[androidx.core:core:1.9.0] C:\Users\sahil\.gradle\caches\8.10.2\transforms\03010d5026d40a2e76861f0916b921c0\transformed\core-1.9.0\AndroidManifest.xml:24:9-44
+35
+36    <uses-permission android:name="com.package.wikipedia.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+36-->[androidx.core:core:1.9.0] C:\Users\sahil\.gradle\caches\8.10.2\transforms\03010d5026d40a2e76861f0916b921c0\transformed\core-1.9.0\AndroidManifest.xml:26:5-97
+36-->[androidx.core:core:1.9.0] C:\Users\sahil\.gradle\caches\8.10.2\transforms\03010d5026d40a2e76861f0916b921c0\transformed\core-1.9.0\AndroidManifest.xml:26:22-94
+37
+38    <application
+38-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:21:3-28:17
+39        android:name="com.package.wikipedia.MainApplication"
+39-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:21:16-47
+40        android:allowBackup="false"
+40-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:21:162-189
+41        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+41-->[androidx.core:core:1.9.0] C:\Users\sahil\.gradle\caches\8.10.2\transforms\03010d5026d40a2e76861f0916b921c0\transformed\core-1.9.0\AndroidManifest.xml:28:18-86
+42        android:extractNativeLibs="false"
+43        android:icon="@mipmap/ic_launcher"
+43-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:21:81-115
+44        android:label="@string/app_name"
+44-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:21:48-80
+45        android:roundIcon="@mipmap/ic_launcher_round"
+45-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:21:116-161
+46        android:supportsRtl="true"
+46-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:21:222-248
+47        android:theme="@style/AppTheme" >
+47-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:21:190-221
+48        <activity
+48-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:22:5-27:16
+49            android:name="com.package.wikipedia.MainActivity"
+49-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:22:15-43
+50            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|uiMode"
+50-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:22:44-134
+51            android:exported="true"
+51-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:22:256-279
+52            android:launchMode="singleTask"
+52-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:22:135-166
+53            android:theme="@style/Theme.App.SplashScreen"
+53-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:22:210-255
+54            android:windowSoftInputMode="adjustResize" >
+54-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:22:167-209
+55            <intent-filter>
+55-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:23:7-26:23
+56                <action android:name="android.intent.action.MAIN" />
+56-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:24:9-60
+56-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:24:17-58
+57
+58                <category android:name="android.intent.category.LAUNCHER" />
+58-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:25:9-68
+58-->C:\WikiGram\wikipedia\android\app\src\main\AndroidManifest.xml:25:19-66
+59            </intent-filter>
+60        </activity>
+61
+62        <provider
+62-->[androidx.emoji2:emoji2:1.2.0] C:\Users\sahil\.gradle\caches\8.10.2\transforms\e112d2ce9cfff128aa1c195007569fea\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:24:9-32:20
+63            android:name="androidx.startup.InitializationProvider"
+63-->[androidx.emoji2:emoji2:1.2.0] C:\Users\sahil\.gradle\caches\8.10.2\transforms\e112d2ce9cfff128aa1c195007569fea\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:25:13-67
+64            android:authorities="com.package.wikipedia.androidx-startup"
+64-->[androidx.emoji2:emoji2:1.2.0] C:\Users\sahil\.gradle\caches\8.10.2\transforms\e112d2ce9cfff128aa1c195007569fea\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:26:13-68
+65            android:exported="false" >
+65-->[androidx.emoji2:emoji2:1.2.0] C:\Users\sahil\.gradle\caches\8.10.2\transforms\e112d2ce9cfff128aa1c195007569fea\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:27:13-37
+66            <meta-data
+66-->[androidx.emoji2:emoji2:1.2.0] C:\Users\sahil\.gradle\caches\8.10.2\transforms\e112d2ce9cfff128aa1c195007569fea\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:29:13-31:52
+67                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+67-->[androidx.emoji2:emoji2:1.2.0] C:\Users\sahil\.gradle\caches\8.10.2\transforms\e112d2ce9cfff128aa1c195007569fea\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:30:17-75
+68                android:value="androidx.startup" />
+68-->[androidx.emoji2:emoji2:1.2.0] C:\Users\sahil\.gradle\caches\8.10.2\transforms\e112d2ce9cfff128aa1c195007569fea\transformed\jetified-emoji2-1.2.0\AndroidManifest.xml:31:17-49
+69            <meta-data
+69-->[androidx.lifecycle:lifecycle-process:2.4.1] C:\Users\sahil\.gradle\caches\8.10.2\transforms\d7d1a72f2b0096b738b2b696226a0d73\transformed\jetified-lifecycle-process-2.4.1\AndroidManifest.xml:31:13-33:52
+70                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+70-->[androidx.lifecycle:lifecycle-process:2.4.1] C:\Users\sahil\.gradle\caches\8.10.2\transforms\d7d1a72f2b0096b738b2b696226a0d73\transformed\jetified-lifecycle-process-2.4.1\AndroidManifest.xml:32:17-78
+71                android:value="androidx.startup" />
+71-->[androidx.lifecycle:lifecycle-process:2.4.1] C:\Users\sahil\.gradle\caches\8.10.2\transforms\d7d1a72f2b0096b738b2b696226a0d73\transformed\jetified-lifecycle-process-2.4.1\AndroidManifest.xml:33:17-49
+72        </provider>
+73
+74        <meta-data
+74-->[com.facebook.soloader:soloader:0.10.5] C:\Users\sahil\.gradle\caches\8.10.2\transforms\919bd9b1309166d74421c03f5a2e71af\transformed\jetified-soloader-0.10.5\AndroidManifest.xml:12:9-14:37
+75            android:name="com.facebook.soloader.enabled"
+75-->[com.facebook.soloader:soloader:0.10.5] C:\Users\sahil\.gradle\caches\8.10.2\transforms\919bd9b1309166d74421c03f5a2e71af\transformed\jetified-soloader-0.10.5\AndroidManifest.xml:13:13-57
+76            android:value="false" />
+76-->[com.facebook.soloader:soloader:0.10.5] C:\Users\sahil\.gradle\caches\8.10.2\transforms\919bd9b1309166d74421c03f5a2e71af\transformed\jetified-soloader-0.10.5\AndroidManifest.xml:14:13-34
+77    </application>
+78
+79</manifest>

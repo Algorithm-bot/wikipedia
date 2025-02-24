@@ -17,14 +17,19 @@ const db = mongoose.connection;
 db.on("error", (error) => console.error("MongoDB Connection Error:", error));
 db.once("open", () => console.log("Connected to MongoDB ✅"));
 
-// Define the schema
 const ArticleSchema = new mongoose.Schema({
-  pageid: { type: Number, unique: true, required: true },
+  user_id: { type: String, required: true },
+  pageid: { type: Number, required: true },
   title: { type: String, required: true },
   extract: { type: String, required: true },
   thumbnail: String,
   url: { type: String, required: true },
+}, {
+  collection: 'MyData'
 });
+
+// Important: Change unique constraint to be compound of user_id and pageid
+ArticleSchema.index({ user_id: 1, pageid: 1 }, { unique: true });
 
 // Create the model with the collection name "MyData"
 const Article = mongoose.model("Article", ArticleSchema, "MyData");
@@ -41,26 +46,25 @@ app.post("/favorites", async (req, res) => {
     console.log("Received POST request to /favorites");
     console.log("Request body:", req.body);
 
-    const { pageid, title, extract, thumbnail, url } = req.body;
+    const { user_id, pageid, title, extract, thumbnail, url } = req.body;
 
-    // Validate input
-    if (!pageid || !title || !extract || !url) {
+    // Validate input including user_id
+    if (!user_id || !pageid || !title || !extract || !url) {
       console.log("❌ Missing required fields!");
       return res.status(400).json({ 
         message: "Missing required fields",
-        received: { pageid, title, extract, url }
+        received: { user_id, pageid, title, extract, url }
       });
     }
 
-    const existingArticle = await Article.findOne({ pageid });
-    console.log("Existing article check result:", existingArticle);
-
+    // Check if article already exists for this user
+    const existingArticle = await Article.findOne({ user_id, pageid });
     if (existingArticle) {
-      console.log("⚠ Article already exists in favorites.");
+      console.log("⚠ Article already exists in favorites for this user.");
       return res.status(400).json({ message: "Already added to favorites" });
     }
 
-    const article = new Article({ pageid, title, extract, thumbnail, url });
+    const article = new Article({ user_id, pageid, title, extract, thumbnail, url });
     const savedArticle = await article.save();
 
     console.log("✅ Article saved successfully:", savedArticle);
@@ -71,11 +75,12 @@ app.post("/favorites", async (req, res) => {
   }
 });
 
-// Get all favorite articles
-app.get("/favorites", async (req, res) => {
+// Get user-specific favorites
+app.get("/favorites/:userId", async (req, res) => {
   try {
-    console.log("Received GET request to /favorites");
-    const favorites = await Article.find();
+    const { userId } = req.params;
+    console.log("Fetching favorites for user:", userId);
+    const favorites = await Article.find({ user_id: userId });
     console.log("Fetched favorites:", favorites);
     res.json(favorites);
   } catch (error) {
@@ -84,19 +89,18 @@ app.get("/favorites", async (req, res) => {
   }
 });
 
-// Remove an article from favorites
-app.delete("/favorites/:pageid", async (req, res) => {
+// Remove a user-specific article from favorites
+app.delete("/favorites/:userId/:pageid", async (req, res) => {
   try {
-    console.log("Received DELETE request to /favorites/:pageid");
-    console.log("Request params:", req.params);
+    const { userId, pageid } = req.params;
+    console.log("Deleting article for user:", userId, "pageid:", pageid);
 
-    const { pageid } = req.params;
-
-    const deletedArticle = await Article.findOneAndDelete({ pageid });
-    console.log("Deleted article result:", deletedArticle);
+    const deletedArticle = await Article.findOneAndDelete({ 
+      user_id: userId,
+      pageid: pageid 
+    });
 
     if (!deletedArticle) {
-      console.log("⚠ Article not found in favorites.");
       return res.status(404).json({ message: "Article not found in favorites" });
     }
 
@@ -109,4 +113,5 @@ app.delete("/favorites/:pageid", async (req, res) => {
 });
 
 // Start the server
-app.listen(5000, () => console.log("Server running on port 5000 🚀"));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT} 🚀🚀`));

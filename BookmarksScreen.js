@@ -10,24 +10,26 @@ import {
   RefreshControl,
   Alert,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { AntDesign, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import axios from 'axios';
 import { useTheme } from './ThemeContext';
 
-const BACKEND_URL = "http://192.168.0.100:5000";
+const BACKEND_URL = "https://wikipedia-backend-v2yn.onrender.com";
 
 const BookmarksScreen = () => {
   const [bookmarks, setBookmarks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
+  const route = useRoute();
+  const { uid } = route.params; // Receive uid from navigation params
   const { darkMode } = useTheme();
 
   const fetchBookmarks = async () => {
     try {
-      console.log("Fetching bookmarks from:", `${BACKEND_URL}/favorites`);
-      const response = await axios.get(`${BACKEND_URL}/favorites`);
+      console.log("Fetching bookmarks for user:", uid);
+      const response = await axios.get(`${BACKEND_URL}/favorites/${uid}`);
       console.log("Received bookmarks:", response.data);
       setBookmarks(response.data);
     } catch (error) {
@@ -44,7 +46,7 @@ const BookmarksScreen = () => {
 
   const removeBookmark = async (pageid) => {
     try {
-      await axios.delete(`${BACKEND_URL}/favorites/${pageid}`);
+      await axios.delete(`${BACKEND_URL}/favorites/${uid}/${pageid}`);
       setBookmarks(prev => prev.filter(bookmark => bookmark.pageid !== pageid));
     } catch (error) {
       console.error('Error removing bookmark:', error);

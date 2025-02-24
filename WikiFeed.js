@@ -10,14 +10,14 @@ import {
   TextInput,
   Alert,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import axios from "axios";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons"; // Heart & Settings icon
 import { LanguageContext } from "./LanguageContext";
 import { useTheme } from "./ThemeContext";
 import { PreferencesContext } from './SettingsScreen';
 
-const BACKEND_URL = "http://192.168.0.100:5000"; // Update with your backend IP
+const BACKEND_URL = "https://wikipedia-backend-v2yn.onrender.com"; // Update with your backend IP
 
 const WikiFeed = () => {
   const [articles, setArticles] = useState([]);
@@ -26,9 +26,11 @@ const WikiFeed = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const navigation = useNavigation();
+  const route = useRoute();
   const { language } = useContext(LanguageContext);
   const { darkMode } = useTheme();
   const { selectedCategory } = useContext(PreferencesContext);
+  const { uid } = route.params; // Receive uid from navigation params
 
   // Fetch a random Wikipedia article
   const getWikiApiUrl = () => {
@@ -116,10 +118,12 @@ const WikiFeed = () => {
   const addToFavorites = async (article) => {
     try {
       console.log("Adding article to favorites:", article); // Debug log
-      const response = await axios.post(`${BACKEND_URL}/favorites`, article);
+      const response = await axios.post(`${BACKEND_URL}/favorites`, {
+        user_id: uid, // Include uid in the payload
+        ...article
+      });
       if (response.data.article) {
         setFavorites((prev) => [...prev, article.pageid]);
-        
       }
     } catch (error) {
       console.error("Error adding to favorites:", error.response?.data?.message || error);
@@ -231,7 +235,7 @@ const WikiFeed = () => {
         </View>
         <TouchableOpacity 
           style={styles.iconButton}
-          onPress={() => navigation.navigate("BookmarksScreen")}
+          onPress={() => navigation.navigate("BookmarksScreen", { uid })}
         >
           <Feather name="bookmark" size={24} color={darkMode ? "white" : "black"} />
         </TouchableOpacity>

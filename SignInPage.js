@@ -13,22 +13,26 @@ const SignInPage = () => {
   // Sign Up
   const handleSignUp = async () => {
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      Alert.alert("Account Created Successfully!");
-      navigation.replace("WikiFeed"); // Redirect to WikiFeed after sign-up
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const uid = userCredential.user.uid;
+      // Navigate to WikiFeed with uid
+      navigation.navigate('WikiFeed', { uid });
     } catch (error) {
-      Alert.alert("Error", error.message);
+      console.error('Error signing up:', error);
+      // Handle error (e.g., show alert)
     }
   };
 
   // Sign In
   const handleSignIn = async () => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      Alert.alert("Signed in successfully!");
-      navigation.replace("WikiFeed"); // Redirect to WikiFeed after login
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const uid = userCredential.user.uid;
+      // Navigate to WikiFeed with uid
+      navigation.navigate('WikiFeed', { uid });
     } catch (error) {
-      Alert.alert("Error", error.message);
+      console.error('Error signing in:', error);
+      // Handle error (e.g., show alert)
     }
   };
 

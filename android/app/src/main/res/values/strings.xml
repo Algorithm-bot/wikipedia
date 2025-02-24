@@ -1,4 +1,5 @@
 <resources>
-    <string name="app_name">Wikipedia</string>
-    <!-- existing code... -->
-</resources> 
+  <string name="app_name">wikipedia</string>
+  <string name="expo_splash_screen_resize_mode" translatable="false">contain</string>
+  <string name="expo_splash_screen_status_bar_translucent" translatable="false">false</string>
+</resources>

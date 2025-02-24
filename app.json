@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "wikipedia",
+    "name": "Wikipedia",
     "slug": "wikipedia",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/app_icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/app_icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -16,9 +16,9 @@
       "supportsTablet": true
     },
     "android": {
-      "package": "com.package.wikipedia",
+      "package": "com.sahil.wikipedia",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/app_icon.png",
         "backgroundColor": "#ffffff"
       }
     },

@@ -90,6 +90,7 @@ android {
     // Add buildFeatures block here
     buildFeatures {
         buildConfig = true
+        prefab true
     }
 }
 

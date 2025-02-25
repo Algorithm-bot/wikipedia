@@ -38,7 +38,7 @@ const SignInPage = () => {
 
   return (
     <View style={styles.container}>
-      <Image source={require("./assets/icon.png")} style={styles.logo} />
+      <Image source={require("./assets/sign_in_page.png")} style={styles.logo} />
 
       <Text style={styles.title}>Welcome to WikiFeed</Text>
       <Text style={styles.subtitle}>Get quick Wikipedia articles instantly!</Text>
@@ -81,8 +81,8 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   logo: {
-    width: 100,
-    height: 100,
+    width: 200,
+    height: 200,
     marginBottom: 20,
   },
   title: {

@@ -9,6 +9,8 @@ import {
   StyleSheet,
   TextInput,
   Alert,
+  StatusBar,
+  SafeAreaView,
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import axios from "axios";
@@ -38,15 +40,20 @@ const WikiFeed = () => {
       return `https://${language}.wikipedia.org/api/rest_v1/page/random/summary`;
     }
     
-    // Use a more reliable category search endpoint
+    // Use interwiki search for better language support
     return `https://${language}.wikipedia.org/w/api.php?` +
       new URLSearchParams({
         action: 'query',
         format: 'json',
-        list: 'categorymembers',
-        cmtitle: `Category:${selectedCategory}`,
-        cmlimit: '20',
-        cmtype: 'page',
+        generator: 'search',
+        gsrsearch: `incategory:${selectedCategory}`,
+        gsrlimit: '10',
+        prop: 'pageimages|extracts',
+        piprop: 'thumbnail',
+        pithumbsize: '300',
+        exintro: '1',
+        explaintext: '1',
+        exlimit: 'max',
         origin: '*'
       });
   };
@@ -67,34 +74,54 @@ const WikiFeed = () => {
         };
         setArticles((prev) => [...prev, newArticle]);
       } else {
-        // Category-specific fetch logic
+        // Modified category-specific fetch logic
         const response = await fetch(getWikiApiUrl());
         const data = await response.json();
         
-        if (data.query && data.query.categorymembers) {
-          // Get a random subset of articles from the category
-          const randomArticles = data.query.categorymembers
-            .sort(() => Math.random() - 0.5)
-            .slice(0, 5);
-
-          // Fetch full details for each article
-          const articleDetails = await Promise.all(
-            randomArticles.map(async (article) => {
-              const detailsResponse = await fetch(
-                `https://${language}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(article.title)}`
-              );
-              const details = await detailsResponse.json();
-              return {
-                pageid: details.pageid,
-                title: details.title,
-                extract: details.extract,
-                thumbnail: details.thumbnail?.source,
-                url: `https://${language}.wikipedia.org/wiki/${details.title.replace(/ /g, "_")}`,
-              };
-            })
-          );
+        if (data.query && data.query.pages) {
+          const pages = Object.values(data.query.pages);
+          const articleDetails = pages.map(page => ({
+            pageid: page.pageid,
+            title: page.title,
+            extract: page.extract || 'No description available',
+            thumbnail: page.thumbnail?.source,
+            url: `https://${language}.wikipedia.org/wiki/${page.title.replace(/ /g, "_")}`,
+          }));
 
           setArticles(prev => [...prev, ...articleDetails]);
+        } else {
+          // If no results found, try fetching with English category names
+          const enResponse = await fetch(
+            `https://${language}.wikipedia.org/w/api.php?` +
+            new URLSearchParams({
+              action: 'query',
+              format: 'json',
+              generator: 'search',
+              gsrsearch: `${selectedCategory}`,  // Search by category name directly
+              gsrlimit: '10',
+              prop: 'pageimages|extracts',
+              piprop: 'thumbnail',
+              pithumbsize: '300',
+              exintro: '1',
+              explaintext: '1',
+              exlimit: 'max',
+              origin: '*'
+            })
+          );
+          
+          const enData = await enResponse.json();
+          if (enData.query && enData.query.pages) {
+            const pages = Object.values(enData.query.pages);
+            const articleDetails = pages.map(page => ({
+              pageid: page.pageid,
+              title: page.title,
+              extract: page.extract || 'No description available',
+              thumbnail: page.thumbnail?.source,
+              url: `https://${language}.wikipedia.org/wiki/${page.title.replace(/ /g, "_")}`,
+            }));
+
+            setArticles(prev => [...prev, ...articleDetails]);
+          }
         }
       }
     } catch (error) {
@@ -210,7 +237,12 @@ const WikiFeed = () => {
   }, [searchQuery]);
 
   return (
-    <View style={[{ flex: 1 }, darkMode && { backgroundColor: '#121212' }]}>
+    <SafeAreaView style={[styles.container, darkMode && { backgroundColor: '#121212' }]}>
+      <StatusBar
+        barStyle={darkMode ? "light-content" : "dark-content"}
+        backgroundColor={darkMode ? "#1a1a1a" : "#ffffff"}
+      />
+      
       {/* Header with Search and Settings */}
       <View style={[styles.header, darkMode && styles.headerDark]}>
         <View style={styles.searchContainer}>
@@ -305,17 +337,20 @@ const WikiFeed = () => {
           )
         }
       />
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     padding: 16,
-    paddingTop: 80,
+    paddingTop: 16,
     backgroundColor: "#ffffff",
     elevation: 4,
     shadowColor: "#000",

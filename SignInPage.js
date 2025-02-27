@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, TextInput, TouchableOpacity, Text, Alert, StyleSheet, Image } from "react-native";
+import { View, TextInput, TouchableOpacity, Text, Alert, StyleSheet, Image, StatusBar, SafeAreaView } from "react-native";
 import { auth } from "./firebaseConfig";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigation } from "@react-navigation/native";
@@ -13,13 +13,35 @@ const SignInPage = () => {
   // Sign Up
   const handleSignUp = async () => {
     try {
+      if (!email || !password) {
+        Alert.alert("Error", "Please enter both email and password.");
+        return;
+      }
+      
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const uid = userCredential.user.uid;
-      // Navigate to WikiFeed with uid
       navigation.navigate('WikiFeed', { uid });
     } catch (error) {
       console.error('Error signing up:', error);
-      // Handle error (e.g., show alert)
+      
+      if (error.code === 'auth/email-already-in-use') {
+        Alert.alert(
+          "Account Exists",
+          "This email is already registered. Please use the Sign In button instead.",
+          [
+            {
+              text: "OK",
+              style: "default"
+            }
+          ]
+        );
+      } else if (error.code === 'auth/weak-password') {
+        Alert.alert("Error", "Password should be at least 6 characters long.");
+      } else if (error.code === 'auth/invalid-email') {
+        Alert.alert("Error", "Please enter a valid email address.");
+      } else {
+        Alert.alert("New User?", "This email is not registered. Please use the Sign Up button to create a new account.");
+      }
     }
   };
 
@@ -28,51 +50,81 @@ const SignInPage = () => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const uid = userCredential.user.uid;
-      // Navigate to WikiFeed with uid
       navigation.navigate('WikiFeed', { uid });
     } catch (error) {
       console.error('Error signing in:', error);
-      // Handle error (e.g., show alert)
+      
+      // Check for specific Firebase error codes
+      if (error.code === 'auth/user-not-found') {
+        Alert.alert(
+          "New User?",
+          "This email is not registered. Please use the Sign Up button to create a new account.",
+          [
+            {
+              text: "OK",
+              style: "default"
+            }
+          ]
+        );
+      } else if (error.code === 'auth/wrong-password') {
+        Alert.alert("Error", "Incorrect password. Please try again.");
+      } else if (error.code === 'auth/invalid-email') {
+        Alert.alert("Error", "Please enter a valid email address.");
+      } else {
+        Alert.alert("New User?", "This email is not registered. Please use the Sign Up button to create a new account.");
+      }
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Image source={require("./assets/sign_in_page.png")} style={styles.logo} />
-
-      <Text style={styles.title}>Welcome to WikiFeed</Text>
-      <Text style={styles.subtitle}>Get quick Wikipedia articles instantly!</Text>
-
-      <TextInput
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        style={styles.input}
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor="#121212"
       />
-      <TextInput
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        style={styles.input}
-      />
+      <View style={styles.container}>
+        <Image source={require("./assets/sign_in_page.png")} style={styles.logo} />
 
-      <TouchableOpacity style={styles.button} onPress={handleSignIn}>
-        <Ionicons name="log-in-outline" size={24} color="white" />
-        <Text style={styles.buttonText}>Sign In</Text>
-      </TouchableOpacity>
+        <Text style={styles.title}>Welcome to WikiFeed</Text>
+        <Text style={styles.subtitle}>Get quick Wikipedia articles instantly!</Text>
 
-      <TouchableOpacity style={[styles.button, styles.signupButton]} onPress={handleSignUp}>
-        <Ionicons name="person-add-outline" size={24} color="white" />
-        <Text style={styles.buttonText}>Sign Up</Text>
-      </TouchableOpacity>
-    </View>
+        <TextInput
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          style={styles.input}
+          placeholderTextColor="#666"
+        />
+        <TextInput
+          placeholder="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          style={styles.input}
+          placeholderTextColor="#666"
+        />
+
+        <TouchableOpacity style={styles.button} onPress={handleSignIn}>
+          <Ionicons name="log-in-outline" size={24} color="white" />
+          <Text style={styles.buttonText}>Sign In</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={[styles.button, styles.signupButton]} onPress={handleSignUp}>
+          <Ionicons name="person-add-outline" size={24} color="white" />
+          <Text style={styles.buttonText}>Sign Up</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#121212",
+  },
   container: {
     flex: 1,
     justifyContent: "center",
@@ -98,9 +150,9 @@ const styles = StyleSheet.create({
   input: {
     width: "90%",
     padding: 12,
-    backgroundColor: "#1E1E1E",
+    backgroundColor: "white",
     borderRadius: 8,
-    color: "#fff",
+    color: "black",
     marginBottom: 15,
   },
   button: {

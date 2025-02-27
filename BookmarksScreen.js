@@ -9,6 +9,8 @@ import {
   ActivityIndicator,
   RefreshControl,
   Alert,
+  StatusBar,
+  SafeAreaView
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { AntDesign, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -82,7 +84,6 @@ const BookmarksScreen = () => {
 
   return (
     <View style={[styles.container, darkMode && styles.containerDark]}>
-      <Text style={[styles.header, darkMode && styles.textDark]}>Bookmarks</Text>
       
       <FlatList
         data={bookmarks}

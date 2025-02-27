@@ -4,11 +4,11 @@
     "slug": "wikipedia",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/app_icon.png",
+    "icon": "./assets/playstore.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/app_icon.png",
+      "image": "./assets/playstore.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -18,12 +18,12 @@
     "android": {
       "package": "com.sahil.wikipedia",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/app_icon.png",
+        "foregroundImage": "./assets/playstore.png",
         "backgroundColor": "#ffffff"
       }
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/playstore.png"
     },
     "extra": {
       "eas": {

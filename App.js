@@ -1,9 +1,9 @@
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-
+import 'react-native-get-random-values';
 import { ThemeProvider } from "./ThemeContext";  
-import { LanguageProvider } from "./LanguageContext";  // ✅ Correct import
+import { LanguageProvider } from "./LanguageContext";  
 import { PreferencesProvider } from './SettingsScreen';
 
 import WikiFeed from "./WikiFeed";

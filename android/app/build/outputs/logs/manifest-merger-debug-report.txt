@@ -13,6 +13,7 @@ MERGED from [:react-native-webview] C:\WikiGram\wikipedia\node_modules\react-nat
 MERGED from [:react-native-async-storage_async-storage] C:\WikiGram\wikipedia\node_modules\@react-native-async-storage\async-storage\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-picker_picker] C:\WikiGram\wikipedia\node_modules\@react-native-picker\picker\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-dev-menu] C:\WikiGram\wikipedia\node_modules\react-native-dev-menu\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:2:1-7:12
+MERGED from [:react-native-get-random-values] C:\WikiGram\wikipedia\node_modules\react-native-get-random-values\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-reanimated] C:\WikiGram\wikipedia\node_modules\react-native-reanimated\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-vector-icons] C:\WikiGram\wikipedia\node_modules\react-native-vector-icons\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:2:1-7:12
 MERGED from [:expo-application] C:\WikiGram\wikipedia\node_modules\expo-application\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:2:1-7:12
@@ -321,6 +322,8 @@ MERGED from [:react-native-picker_picker] C:\WikiGram\wikipedia\node_modules\@re
 MERGED from [:react-native-picker_picker] C:\WikiGram\wikipedia\node_modules\@react-native-picker\picker\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-dev-menu] C:\WikiGram\wikipedia\node_modules\react-native-dev-menu\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-dev-menu] C:\WikiGram\wikipedia\node_modules\react-native-dev-menu\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
+MERGED from [:react-native-get-random-values] C:\WikiGram\wikipedia\node_modules\react-native-get-random-values\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
+MERGED from [:react-native-get-random-values] C:\WikiGram\wikipedia\node_modules\react-native-get-random-values\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-reanimated] C:\WikiGram\wikipedia\node_modules\react-native-reanimated\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-reanimated] C:\WikiGram\wikipedia\node_modules\react-native-reanimated\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-vector-icons] C:\WikiGram\wikipedia\node_modules\react-native-vector-icons\android\build\intermediates\merged_manifest\debug\processDebugManifest\AndroidManifest.xml:5:5-44

@@ -5,7 +5,7 @@
     <color name="iconBackground">#ffffff</color>
     <color name="splashscreen_background">#ffffff</color>
     <integer name="react_native_dev_server_port">8081</integer>
-    <string name="app_name">wikipedia</string>
+    <string name="app_name">Wikipedia</string>
     <string name="expo_splash_screen_resize_mode" translatable="false">contain</string>
     <string name="expo_splash_screen_status_bar_translucent" translatable="false">false</string>
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">

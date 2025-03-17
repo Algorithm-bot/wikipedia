@@ -13,7 +13,7 @@ import {
   Image,
   Alert
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";  // ✅ Import Picker
+import { Picker } from "@react-native-picker/picker"; 
 import { useTheme } from "./ThemeContext";
 import { LanguageContext } from "./LanguageContext";
 import { useNavigation } from "@react-navigation/native";
@@ -36,6 +36,8 @@ const CATEGORIES = [
   { label: "Medicine", value: "Medicine" },
 ];
 
+
+//Language selection
 const LANGUAGES = [
   { label: "English", value: "en", flag: "🇺🇸" },
   { label: "Afrikaans", value: "af", flag: "🇿🇦" },

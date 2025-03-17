@@ -1,0 +1,17 @@
+How did you recruit users for your closed test? For example, did you ask friends and family, or use a paid testing provider?
+ans: I utilized social media platforms and relevant online communities (like forums and Slack groups related to my app's niche) to invite users to join the closed test. This way, I ensured that the testers were interested in the app's focus.
+
+
+Describe the engagement you received from testers during your closed test
+ans: Testers engaged well with core features, but some secondary features were underused, likely due to visibility or lack of immediate need. Usage was generally aligned with my expectations, though a few testers  didn’t explore certain features, suggesting areas for improvement in discovery.
+
+Provide a summary of the feedback that you received from testers. Include how you collected the feedback.
+ans: I collected feedback through Google Groups. Testers suggested improving the speed of API calls and adding more customization options, which I'm going to implement for an even better user experience in future updates.
+
+Who is the intended audience of your app?
+ans: Students & Researchers – Those looking for quick, summarized insights on various topics.
+Tech-Savvy Users – Individuals who prefer a modern, engaging way to consume Wikipedia content.
+Casual Readers – Anyone who enjoys scrolling through bite-sized educational content in a TikTok-style format.
+
+Describe how your app provides value to users
+ans: Users can use my app to scroll wikipedia articles in a TikTok-style vertical feed, delivering bite-sized article summaries. Users can quickly discover, explore, and filter topics of interest, making learning effortless, interactive, and time-efficient while staying informed on diverse subjects. 

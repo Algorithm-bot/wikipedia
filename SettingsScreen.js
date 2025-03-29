@@ -18,6 +18,7 @@ import { useTheme } from "./ThemeContext";
 import { LanguageContext } from "./LanguageContext";
 import { useNavigation } from "@react-navigation/native";
 import { auth } from "./firebaseConfig";
+import { WebView } from 'react-native-webview';
 
 const CATEGORIES = [
   { label: "All", value: "all" },
@@ -154,6 +155,7 @@ const SettingsScreen = () => {
   const { selectedCategory, setSelectedCategory } = useContext(PreferencesContext);
   const [categoryModalVisible, setCategoryModalVisible] = useState(false);
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
+  const [webViewVisible, setWebViewVisible] = useState(false);
   const navigation = useNavigation();
 
   const selectedLanguage = LANGUAGES.find(lang => lang.value === language) || LANGUAGES[0];
@@ -316,6 +318,38 @@ const SettingsScreen = () => {
         >
           <Text style={styles.logoutText}>Log Out</Text>
         </TouchableOpacity>
+
+        {/* Delete Account Button */}
+        <TouchableOpacity 
+          style={styles.deleteAccountButton}
+          onPress={() => setWebViewVisible(true)}
+        >
+          <Text style={styles.deleteAccountText}>Delete Account</Text>
+        </TouchableOpacity>
+
+        {/* WebView Modal */}
+        <Modal
+          animationType="slide"
+          visible={webViewVisible}
+          onRequestClose={() => setWebViewVisible(false)}
+        >
+          <SafeAreaView style={styles.webViewContainer}>
+            <View style={styles.webViewHeader}>
+              <TouchableOpacity 
+                style={styles.closeWebViewButton}
+                onPress={() => setWebViewVisible(false)}
+              >
+                <Text style={styles.closeWebViewText}>Close</Text>
+              </TouchableOpacity>
+              <Text style={styles.webViewTitle}>Delete Account</Text>
+            </View>
+            <WebView 
+              source={{ uri: 'https://willowy-beignet-ba8702.netlify.app/' }}
+              style={styles.webView}
+              javaScriptEnabled={true}
+            />
+          </SafeAreaView>
+        </Modal>
 
         {/* Developer Contact Info */}
         <Text style={[styles.contact, darkMode && styles.textDark]}>
@@ -542,6 +576,53 @@ const styles = StyleSheet.create({
   selectedItemText: {
     color: '#2196F3',
     fontWeight: 'bold',
+  },
+  deleteAccountButton: {
+    backgroundColor: "#FF3B30",
+    padding: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    marginBottom: 24,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  deleteAccountText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "600",
+    letterSpacing: 0.5,
+  },
+  webViewContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  webViewHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  closeWebViewButton: {
+    padding: 8,
+  },
+  closeWebViewText: {
+    color: '#2196F3',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  webViewTitle: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 18,
+    fontWeight: '600',
+    marginRight: 40,
+  },
+  webView: {
+    flex: 1,
   },
 });
 
